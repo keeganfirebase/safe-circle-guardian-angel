@@ -1,7 +1,6 @@
 
 import React, { useState } from 'react';
 import { Camera as CameraIcon, Image, Video, Trash2 } from 'lucide-react';
-import { Camera, CameraResultType, CameraSource } from '@capacitor/camera';
 import { useToast } from '@/hooks/use-toast';
 
 interface CapturedMedia {
@@ -11,6 +10,21 @@ interface CapturedMedia {
   timestamp: string;
 }
 
+// Mock Camera implementation for browser testing
+const MockCamera = {
+  requestPermissions: async () => {
+    console.log('Mock: Requesting camera permissions');
+    return { camera: 'granted' };
+  },
+  getPhoto: async (options: any) => {
+    console.log('Mock: Taking photo with options:', options);
+    // Return a mock base64 image (1x1 pixel red dot)
+    return {
+      dataUrl: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg=='
+    };
+  }
+};
+
 const CameraCapture = () => {
   const [capturedMedia, setCapturedMedia] = useState<CapturedMedia[]>([]);
   const [isCapturing, setIsCapturing] = useState(false);
@@ -18,9 +32,8 @@ const CameraCapture = () => {
 
   const requestCameraPermissions = async () => {
     try {
-      const permissions = await Camera.requestPermissions({
-        permissions: ['camera', 'photos']
-      });
+      const permissions = await MockCamera.requestPermissions();
+      console.log('Camera permissions result:', permissions);
       return permissions.camera === 'granted';
     } catch (error) {
       console.error('Camera permission error:', error);
@@ -42,11 +55,11 @@ const CameraCapture = () => {
         return;
       }
 
-      const image = await Camera.getPhoto({
+      const image = await MockCamera.getPhoto({
         quality: 90,
         allowEditing: false,
-        resultType: CameraResultType.DataUrl,
-        source: CameraSource.Camera
+        resultType: 'DataUrl',
+        source: 'Camera'
       });
 
       if (image.dataUrl) {
@@ -89,11 +102,11 @@ const CameraCapture = () => {
         return;
       }
 
-      const image = await Camera.getPhoto({
+      const image = await MockCamera.getPhoto({
         quality: 90,
         allowEditing: false,
-        resultType: CameraResultType.DataUrl,
-        source: CameraSource.Photos
+        resultType: 'DataUrl',
+        source: 'Photos'
       });
 
       if (image.dataUrl) {
@@ -148,6 +161,7 @@ const CameraCapture = () => {
       <div className="text-center">
         <h2 className="text-2xl font-bold mb-2">Camera & Media</h2>
         <p className="text-muted-foreground">Capture and share safety evidence</p>
+        <p className="text-xs text-yellow-600 mt-1">Note: Using mock camera for browser testing</p>
       </div>
 
       {/* Camera Controls */}
