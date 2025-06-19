@@ -21,12 +21,6 @@ const LocationTracker = () => {
   const [deviceInfo, setDeviceInfo] = useState<CapDeviceInfo | null>(null);
   const { toast } = useToast();
 
-  useEffect(() => {
-    checkPermissions();
-    getDeviceInfo();
-    getBatteryInfo();
-  }, [checkPermissions, getDeviceInfo, getBatteryInfo]);
-
   const getDeviceInfo = useCallback(async () => {
     try {
       const info = await Device.getInfo();
@@ -106,6 +100,12 @@ const LocationTracker = () => {
       });
     }
   }, [toast, startTracking]);
+
+  useEffect(() => {
+    checkPermissions();
+    getDeviceInfo();
+    getBatteryInfo();
+  }, [checkPermissions, getDeviceInfo, getBatteryInfo]);
 
   const stopTracking = () => {
     setIsTracking(false);
