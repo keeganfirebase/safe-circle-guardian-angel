@@ -10,13 +10,24 @@ interface CapturedMedia {
   timestamp: string;
 }
 
+interface MockCameraPhotoOptions {
+  quality?: number;
+  allowEditing?: boolean;
+  resultType?: 'DataUrl' | 'Base64' | 'Uri';
+  source?: 'Camera' | 'Photos';
+  saveToGallery?: boolean;
+  width?: number;
+  height?: number;
+  correctOrientation?: boolean;
+}
+
 // Mock Camera implementation for browser testing
 const MockCamera = {
   requestPermissions: async () => {
     console.log('Mock: Requesting camera permissions');
     return { camera: 'granted' };
   },
-  getPhoto: async (options: any) => {
+  getPhoto: async (options: MockCameraPhotoOptions) => {
     console.log('Mock: Taking photo with options:', options);
     // Return a mock base64 image (1x1 pixel red dot)
     return {
