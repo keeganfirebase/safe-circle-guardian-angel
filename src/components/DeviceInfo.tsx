@@ -1,13 +1,13 @@
 
 import React, { useState, useEffect } from 'react';
-import { Device } from '@capacitor/device';
+import { Device, DeviceInfo as CapDeviceInfo } from '@capacitor/device';
 import { Motion } from '@capacitor/motion';
 import { Haptics, ImpactStyle } from '@capacitor/haptics';
 import { useToast } from '@/hooks/use-toast';
 import { Smartphone, Battery, Wifi, Zap, Activity } from 'lucide-react';
 
 const DeviceInfo = () => {
-  const [deviceInfo, setDeviceInfo] = useState<any>(null);
+  const [deviceInfo, setDeviceInfo] = useState<CapDeviceInfo | null>(null);
   const [acceleration, setAcceleration] = useState({ x: 0, y: 0, z: 0 });
   const [isMonitoring, setIsMonitoring] = useState(false);
   const { toast } = useToast();

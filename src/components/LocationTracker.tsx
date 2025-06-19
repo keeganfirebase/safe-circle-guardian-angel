@@ -1,8 +1,8 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { MapPin, Navigation, AlertTriangle, Battery, Wifi } from 'lucide-react';
 import { Geolocation } from '@capacitor/geolocation';
-import { Device } from '@capacitor/device';
+import { Device, DeviceInfo as CapDeviceInfo } from '@capacitor/device';
 import { useToast } from '@/hooks/use-toast';
 
 interface LocationData {
@@ -18,57 +18,34 @@ const LocationTracker = () => {
   const [location, setLocation] = useState<LocationData | null>(null);
   const [isTracking, setIsTracking] = useState(false);
   const [batteryLevel, setBatteryLevel] = useState<number | null>(null);
-  const [deviceInfo, setDeviceInfo] = useState<any>(null);
+  const [deviceInfo, setDeviceInfo] = useState<CapDeviceInfo | null>(null);
   const { toast } = useToast();
 
   useEffect(() => {
     checkPermissions();
     getDeviceInfo();
     getBatteryInfo();
-  }, []);
+  }, [checkPermissions, getDeviceInfo, getBatteryInfo]);
 
-  const checkPermissions = async () => {
-    try {
-      const permissions = await Geolocation.checkPermissions();
-      console.log('Location permissions:', permissions);
-      
-      if (permissions.location === 'granted') {
-        startTracking();
-      } else {
-        const request = await Geolocation.requestPermissions();
-        if (request.location === 'granted') {
-          startTracking();
-        }
-      }
-    } catch (error) {
-      console.error('Permission error:', error);
-      toast({
-        title: "Permission Error",
-        description: "Could not access location services",
-        variant: "destructive"
-      });
-    }
-  };
-
-  const getDeviceInfo = async () => {
+  const getDeviceInfo = useCallback(async () => {
     try {
       const info = await Device.getInfo();
       setDeviceInfo(info);
     } catch (error) {
       console.error('Device info error:', error);
     }
-  };
+  }, []);
 
-  const getBatteryInfo = async () => {
+  const getBatteryInfo = useCallback(async () => {
     try {
       const info = await Device.getBatteryInfo();
       setBatteryLevel(info.batteryLevel);
     } catch (error) {
       console.error('Battery info error:', error);
     }
-  };
+  }, []);
 
-  const startTracking = async () => {
+  const startTracking = useCallback(async () => {
     try {
       setIsTracking(true);
       const position = await Geolocation.getCurrentPosition({
@@ -105,7 +82,30 @@ const LocationTracker = () => {
         variant: "destructive"
       });
     }
-  };
+  }, [toast, setIsTracking, setLocation]);
+
+  const checkPermissions = useCallback(async () => {
+    try {
+      const permissions = await Geolocation.checkPermissions();
+      console.log('Location permissions:', permissions);
+
+      if (permissions.location === 'granted') {
+        startTracking();
+      } else {
+        const request = await Geolocation.requestPermissions();
+        if (request.location === 'granted') {
+          startTracking();
+        }
+      }
+    } catch (error) {
+      console.error('Permission error:', error);
+      toast({
+        title: "Permission Error",
+        description: "Could not access location services",
+        variant: "destructive"
+      });
+    }
+  }, [toast, startTracking]);
 
   const stopTracking = () => {
     setIsTracking(false);
